@@ -92,16 +92,13 @@ if(!S){
 if(!S.l)S.l=[];
 let cur='all';
 const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BK='murgi_bk';let cloud='off',cloudAt=null,DB=null,UID=null,ready=false,tm=null;
+const BK='murgi_bk';
 function snap(){try{const a=JSON.parse(localStorage.getItem(BK)||'[]'),j=JSON.stringify(S);if(a.length&&a[0].j===j)return;a.unshift({t:Date.now(),j});localStorage.setItem(BK,JSON.stringify(a.slice(0,10)))}catch(e){}}
-const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap();cloudSave()};
-function cloudSave(){if(!DB||!ready)return;clearTimeout(tm);cloud='saving';renderBk();tm=setTimeout(async()=>{try{await DB.collection('data/users/'+UID).doc('backup').set({j:JSON.stringify(S),t:Date.now()});cloud='ok';cloudAt=Date.now()}catch(e){cloud='err'}renderBk()},500)}
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap()};
 const ago=t=>new Date(t).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});
 function renderBk(){const el=$('bk');if(!el)return;let a=[];try{a=JSON.parse(localStorage.getItem(BK)||'[]')}catch(e){}
- const st={ok:'☁️ ক্লাউড ব্যাকআপ চালু • শেষ সেভ: '+(cloudAt?ago(cloudAt):''),saving:'☁️ ক্লাউডে সেভ হচ্ছে…',err:'⚠️ ক্লাউডে সেভ হয়নি, ফোনে সেভ আছে',na:'⚠️ ক্লাউড ব্যাকআপ বন্ধ (Claude-এ সাইন-ইন থাকলে চালু হয়)। ফোনে অটো ব্যাকআপ আছে।',off:'ক্লাউড চেক হচ্ছে…'}[cloud];
- el.innerHTML='<b>🛡️ অটো ব্যাকআপ</b><div class="m" style="margin:6px 0">'+st+'</div>'+(DB?'<button class="add" style="padding:8px;font-size:14px;margin-bottom:8px" onclick="restoreCloud()">☁️ ক্লাউড থেকে ফিরিয়ে আনুন</button>':'')+'<div class="m">প্রতি এন্ট্রির পর সেভ হয়। ফোনে শেষ ১০টা কপি:</div>'+a.map((x,i)=>'<div class="row"><span>'+ago(x.t)+'</span><button class="add" style="width:auto;padding:6px 12px;font-size:13px" onclick="restoreBk('+i+')">ফিরিয়ে আনুন</button></div>').join('')}
+ el.innerHTML='<b>🛡️ অটো ব্যাকআপ</b><div class="m" style="margin:6px 0">প্রতি এন্ট্রির পর ফোনে অটো সেভ হয়। শেষ ১০টা কপি:</div>'+a.map((x,i)=>'<div class="row"><span>'+ago(x.t)+'</span><button class="add" style="width:auto;padding:6px 12px;font-size:13px" onclick="restoreBk('+i+')">ফিরিয়ে আনুন</button></div>').join('')}
 async function restoreBk(i){if(!await pw())return;try{const a=JSON.parse(localStorage.getItem(BK));S=JSON.parse(a[i].j);if(!S.l)S.l=[];sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
-async function restoreCloud(){if(!await pw())return;try{const sn=await DB.collection('data/users/'+UID).doc('backup').get();if(!sn.exists)return alert('ক্লাউডে কোনো ব্যাকআপ নেই');S=JSON.parse(sn.data().j);if(!S.l)S.l=[];sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
 const bn=n=>Number(n).toLocaleString('bn-BD',{maximumFractionDigits:2});
 const $=i=>document.getElementById(i);
 const B=id=>S.b.find(x=>x.id==id);
@@ -175,9 +172,5 @@ function setB(id,v){S.e.find(x=>x.id==id).b=+v;sv();render()}
 async function del(t,id){if(!await pw())return;S[t]=S[t].filter(x=>x.id!==id);sv();render()}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['s','e','d','b','l'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t))});
 $('ed').value=$('dd').value=$('bh').value=$('ld').value=today;render();
-(async()=>{try{const u=await claude.use('user'),d=await claude.use('db');if(!u||!d){cloud='na';renderBk();return}UID=await u.id();if(!UID){cloud='na';renderBk();return}DB=d;
- const sn=await DB.collection('data/users/'+UID).doc('backup').get();
- if(sn.exists&&fresh){S=JSON.parse(sn.data().j);if(!S.l)S.l=[];try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap()}
- ready=true;cloudSave();render()}catch(e){cloud='na';renderBk()}})();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
