@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b7a3e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Adnan Agro">
+<title>Adnan Agro – মুরগির হিসাব</title>
+<style>
+:root{--bg:#f5f6f0;--card:#fff;--tx:#3c3c3c;--mu:#6f726b;--ac:#0b7a3e;--bd:#dfe3d6;--rd:#c0392b;--gn:#0b7a3e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161a17;--card:#202622;--tx:#eef1ea;--mu:#9ca69b;--bd:#323a34;--ac:#2fa564;--rd:#ef7c6e;--gn:#4fc47f;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,"Noto Sans Bengali",sans-serif;padding:12px 12px 40px}
+h1{font-size:20px;margin:4px 0 8px}
+.tabs{display:flex;gap:5px;margin:10px 0}.tabs button{flex:1;padding:10px 2px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:13px}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.big{font-size:22px;font-weight:700;color:var(--ac)}.lb{font-size:12px;color:var(--mu)}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:15px;margin-bottom:6px}
+select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
+.add{width:100%;padding:12px;background:var(--ac);color:#fff;border:0;border-radius:10px;font-size:16px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);gap:8px;font-size:14px}
+.row:last-child{border:0}.x{background:none;border:0;color:var(--rd);font-size:18px}.r{text-align:right;font-weight:600}.m{color:var(--mu);font-size:12px}
+.pos{color:var(--gn)}.neg{color:var(--rd)}.hide{display:none}.note{font-size:12px;color:var(--mu);margin-top:6px}
+#mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}#mo .bx{background:var(--card);color:var(--tx);border-radius:14px;padding:16px;width:100%;max-width:340px}#mo .bt{display:flex;gap:8px;margin-top:6px}#mo button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:15px}#mo button.ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+.hd{display:flex;align-items:center;gap:10px;margin:4px 0 10px}.hd img{width:66px;height:62px;border-radius:12px;background:#f7f7f2;object-fit:contain;border:1px solid var(--bd)}.hd .bn{font-size:21px;font-weight:800;color:var(--ac);letter-spacing:.5px;line-height:1.1}
+</style></head><body>
+<div class="hd"><img alt="Adnan Agro" src="logo.jpg"><div><div class="bn">Adnan Agro</div><div class="m">দেশি মুরগির বাচ্চার হিসাব</div></div></div>
+<select id="cur" onchange="cur=this.value;render()"></select>
+<div class="tabs"><button data-t="s" class="on">সারাংশ</button><button data-t="e">খরচ</button><button data-t="d">দৈনিক</button><button data-t="b">ব্যাচ</button><button data-t="l">ধার</button></div>
+
+<div id="s"></div>
+
+<div id="e" class="hide">
+ <div class="card"><b>নতুন খরচ</b><br>
+  <input id="en" placeholder="কী কিনলেন (যেমন: ফিড)">
+  <div class="grid"><input id="eq" type="number" placeholder="পরিমাণ" value="1"><input id="ep" type="number" placeholder="একক দাম (৳)"></div>
+  <select id="ec"><option>সরঞ্জাম</option><option>খাবার</option><option>ওষুধ</option><option>অন্যান্য</option></select>
+  <div class="lb">কোন ব্যাচের জন্য?</div><select id="eb"></select>
+  <input id="ed" type="date"><button class="add" onclick="addE()">খরচ যোগ করুন</button>
+  <div class="note">"সব ব্যাচ" দিলে খরচটা বাচ্চার সংখ্যা অনুযায়ী সব ব্যাচে ভাগ হবে (যেমন ব্রুডিং টিন, বালব, পাত্র)।</div></div>
+ <div class="card" id="el"></div>
+</div>
+
+<div id="d" class="hide">
+ <div class="card"><b>দৈনিক এন্ট্রি</b><br>
+  <div class="lb">ব্যাচ</div><select id="db"></select>
+  <input id="dd" type="date">
+  <div class="grid"><input id="dm" type="number" placeholder="মৃত্যু (টি)"><input id="df" type="number" step="0.01" placeholder="খাবার (কেজি)"></div>
+  <div class="grid"><input id="ds" type="number" placeholder="বিক্রি (টি)"><input id="di" type="number" placeholder="বিক্রির আয় (৳)"></div>
+  <input id="dw" type="number" placeholder="গড় ওজন (গ্রাম)"><input id="dn" placeholder="নোট / টিকা / ওষুধ">
+  <button class="add" onclick="addD()">সংরক্ষণ করুন</button></div>
+ <div class="card" id="dl"></div>
+</div>
+
+<div id="b" class="hide">
+ <div class="card" id="bl"></div>
+ <div class="card"><b>নতুন ব্যাচ যোগ করুন</b><br>
+  <input id="bn" placeholder="ব্যাচের নাম (যেমন: ব্যাচ ২)">
+  <input id="bc" type="number" placeholder="বাচ্চার সংখ্যা">
+  <div class="lb">আসার / ফোটার তারিখ</div><input id="bh" type="date">
+  <button class="add" onclick="addB()">ব্যাচ যোগ করুন</button></div>
+ <div class="card" id="bk"></div>
+</div>
+
+<div id="l" class="hide">
+ <div id="ls"></div>
+ <div class="card"><b>নতুন ধারের এন্ট্রি</b><br>
+  <select id="lt"><option value="in">ধার নিলাম (আমি দেবো)</option><option value="out">ধার দিলাম (আমি পাবো)</option></select>
+  <input id="lw" placeholder="কার কাছ থেকে / কাকে">
+  <input id="la" type="number" placeholder="টাকার পরিমাণ (৳)">
+  <input id="ld" type="date"><input id="ln" placeholder="নোট (ঐচ্ছিক)">
+  <button class="add" onclick="addL()">যোগ করুন</button>
+  <div class="note">ধারের হিসাব খরচ বা লাভ-ক্ষতির সাথে মেশে না, আলাদা থাকে।</div></div>
+ <div class="card" id="ll"></div>
+</div>
+
+<div id="mo"><div class="bx"><div id="mm" style="margin-bottom:10px"></div><input id="mi" inputmode="numeric"><div class="bt"><button id="mc">বাতিল</button><button class="ok" id="mk">ঠিক আছে</button></div></div></div>
+<script>
+const K='murgi_v2',T=new Date();
+const today=new Date(T.getTime()-T.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const E0=[["২০০ ওয়াট বালব",4,60,"সরঞ্জাম"],["১০০ ওয়াট বালব",4,30,"সরঞ্জাম"],["হোল্ডার",2,50,"সরঞ্জাম"],["২ পিন",2,50,"সরঞ্জাম"],["ব্রুডিং টিন",1,900,"সরঞ্জাম"],["তুষ",1,100,"খাবার"],["পেপার",1,80,"সরঞ্জাম"],["অটো তাপমাত্রা ব্রুডার লাইট সিস্টেম",2,400,"সরঞ্জাম"],["ওট (৫ কেজি)",5,70,"খাবার"],["লাইসোভিট",2,75,"ওষুধ"],["পানির পাত্র",8,30,"সরঞ্জাম"],["খাবার পাত্র",2,50,"সরঞ্জাম"],["AD3",1,120,"ওষুধ"],["থায়ামিন + বিটা থ্রি",2,210,"ওষুধ"],["অ্যামোক্সিসিলিন ও সিপ্রোসিন",1,440,"ওষুধ"],["৫ দিনের রানীক্ষেত",1,300,"ওষুধ"],["পানি ও খাবারের স্ট্যান্ড",5,30,"সরঞ্জাম"]];
+const shared0=["২০০ ওয়াট বালব","১০০ ওয়াট বালব","হোল্ডার","২ পিন","ব্রুডিং টিন","অটো তাপমাত্রা ব্রুডার লাইট সিস্টেম","পানির পাত্র","খাবার পাত্র","পানি ও খাবারের স্ট্যান্ড"];
+let S=null,fresh=false;try{fresh=!localStorage.getItem(K)&&!localStorage.getItem('murgi_v1')}catch(e){}
+try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!S){
+ let o=null;try{o=JSON.parse(localStorage.getItem('murgi_v1'))}catch(e){}
+ if(o){S={b:[{id:1,name:'ব্যাচ ১',n:o.n,hatch:o.hatch}],e:o.e.map(x=>({id:x.id,n:x.n,q:x.q,p:x.p,c:x.c,d:x.d,b:shared0.includes(x.n)?0:1})),d:o.d.map(x=>({...x,b:1})),id:o.id+1}}
+ else S={b:[{id:1,name:'ব্যাচ ১',n:137,hatch:'2026-11-14'}],e:E0.map((x,i)=>({id:i+1,n:x[0],q:x[1],p:x[2],c:x[3],d:today,b:shared0.includes(x[0])?0:1})),d:[],id:100};
+}
+if(!S.l)S.l=[];
+let cur='all';
+const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const BK='murgi_bk';let cloud='off',cloudAt=null,DB=null,UID=null,ready=false,tm=null;
+function snap(){try{const a=JSON.parse(localStorage.getItem(BK)||'[]'),j=JSON.stringify(S);if(a.length&&a[0].j===j)return;a.unshift({t:Date.now(),j});localStorage.setItem(BK,JSON.stringify(a.slice(0,10)))}catch(e){}}
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap();cloudSave()};
+function cloudSave(){if(!DB||!ready)return;clearTimeout(tm);cloud='saving';renderBk();tm=setTimeout(async()=>{try{await DB.collection('data/users/'+UID).doc('backup').set({j:JSON.stringify(S),t:Date.now()});cloud='ok';cloudAt=Date.now()}catch(e){cloud='err'}renderBk()},500)}
+const ago=t=>new Date(t).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});
+function renderBk(){const el=$('bk');if(!el)return;let a=[];try{a=JSON.parse(localStorage.getItem(BK)||'[]')}catch(e){}
+ const st={ok:'☁️ ক্লাউড ব্যাকআপ চালু • শেষ সেভ: '+(cloudAt?ago(cloudAt):''),saving:'☁️ ক্লাউডে সেভ হচ্ছে…',err:'⚠️ ক্লাউডে সেভ হয়নি, ফোনে সেভ আছে',na:'⚠️ ক্লাউড ব্যাকআপ বন্ধ (Claude-এ সাইন-ইন থাকলে চালু হয়)। ফোনে অটো ব্যাকআপ আছে।',off:'ক্লাউড চেক হচ্ছে…'}[cloud];
+ el.innerHTML='<b>🛡️ অটো ব্যাকআপ</b><div class="m" style="margin:6px 0">'+st+'</div>'+(DB?'<button class="add" style="padding:8px;font-size:14px;margin-bottom:8px" onclick="restoreCloud()">☁️ ক্লাউড থেকে ফিরিয়ে আনুন</button>':'')+'<div class="m">প্রতি এন্ট্রির পর সেভ হয়। ফোনে শেষ ১০টা কপি:</div>'+a.map((x,i)=>'<div class="row"><span>'+ago(x.t)+'</span><button class="add" style="width:auto;padding:6px 12px;font-size:13px" onclick="restoreBk('+i+')">ফিরিয়ে আনুন</button></div>').join('')}
+async function restoreBk(i){if(!await pw())return;try{const a=JSON.parse(localStorage.getItem(BK));S=JSON.parse(a[i].j);if(!S.l)S.l=[];sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
+async function restoreCloud(){if(!await pw())return;try{const sn=await DB.collection('data/users/'+UID).doc('backup').get();if(!sn.exists)return alert('ক্লাউডে কোনো ব্যাকআপ নেই');S=JSON.parse(sn.data().j);if(!S.l)S.l=[];sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
+const bn=n=>Number(n).toLocaleString('bn-BD',{maximumFractionDigits:2});
+const $=i=>document.getElementById(i);
+const B=id=>S.b.find(x=>x.id==id);
+const bname=id=>id==0?'সব ব্যাচ':(B(id)||{name:'?'}).name;
+const age=b=>Math.max(0,Math.round((new Date(today)-new Date(b.hatch))/864e5));
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+const totN=()=>sum(S.b,b=>+b.n)||1;
+function stats(bid){ // bid: 'all' or id
+ const bs=bid=='all'?S.b:[B(bid)],N=sum(bs,b=>+b.n);
+ const sharedTot=sum(S.e.filter(x=>x.b==0),x=>x.q*x.p);
+ const direct=sum(S.e.filter(x=>bid=='all'?x.b!=0:x.b==bid),x=>x.q*x.p);
+ const cost=direct+(bid=='all'?sharedTot:sharedTot*N/totN());
+ const L=S.d.filter(x=>bid=='all'||x.b==bid);
+ const dead=sum(L,x=>+x.m||0),sold=sum(L,x=>+x.s||0),inc=sum(L,x=>+x.i||0),feed=sum(L,x=>+x.f||0);
+ return{N,cost,direct,shared:cost-direct,dead,sold,inc,feed,alive:N-dead-sold,pr:inc-cost}
+}
+function fillSel(){
+ const opts=S.b.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+ $('cur').innerHTML='<option value="all">📊 সব ব্যাচ (মোট ইনভেস্ট)</option>'+opts;$('cur').value=cur;
+ const keep=[$('eb').value,$('db').value];
+ $('eb').innerHTML='<option value="0">সব ব্যাচ (ভাগ হবে)</option>'+opts;
+ $('db').innerHTML=opts;
+ if(keep[0])$('eb').value=keep[0];if(keep[1])$('db').value=keep[1];
+ if(cur!='all'){$('eb').value=$('eb').value;$('db').value=cur}
+}
+function render(){
+ fillSel();
+ const s=stats(cur),title=cur=='all'?'সব ব্যাচ মিলিয়ে':bname(cur);
+ let h=`<div class="card"><b>${title}</b><div class="m">${cur=='all'?S.b.map(b=>b.name+': '+bn(age(b))+' দিন').join(' • '):'বয়স '+bn(age(B(cur)))+' দিন • বাচ্চা '+bn(s.N)+' টি'}</div></div>
+ <div class="grid">
+ <div class="card"><div class="lb">জীবিত</div><div class="big">${bn(s.alive)}</div></div>
+ <div class="card"><div class="lb">মৃত্যু</div><div class="big">${bn(s.dead)}</div></div>
+ <div class="card"><div class="lb">${cur=='all'?'মোট ইনভেস্ট':'এই ব্যাচের খরচ'}</div><div class="big">৳${bn(s.cost)}</div></div>
+ <div class="card"><div class="lb">প্রতি বাচ্চায় খরচ</div><div class="big">৳${bn(s.cost/s.N)}</div></div>
+ <div class="card"><div class="lb">মোট আয়</div><div class="big">৳${bn(s.inc)}</div></div>
+ <div class="card"><div class="lb">লাভ / ক্ষতি</div><div class="big ${s.pr>=0?'pos':'neg'}">৳${bn(s.pr)}</div></div></div>`;
+ if(cur!='all')h+=`<div class="card"><b>খরচের ভাঙ্গা</b><div class="row"><span>সরাসরি এই ব্যাচের</span><span class="r">৳${bn(s.direct)}</span></div><div class="row"><span>শেয়ার্ড (সরঞ্জাম ইত্যাদির ভাগ)</span><span class="r">৳${bn(s.shared)}</span></div></div>`;
+ else h+=`<div class="card"><b>ব্যাচ অনুযায়ী খরচ</b>${S.b.map(b=>{const t=stats(b.id);return `<div class="row"><span>${b.name} <span class="m">(${bn(b.n)} টি)</span></span><span class="r">৳${bn(t.cost)}</span></div>`}).join('')}</div>`;
+ const cat={};S.e.forEach(x=>{if(cur=='all'||x.b==cur||x.b==0){const v=x.q*x.p*(cur!='all'&&x.b==0?B(cur).n/totN():1);cat[x.c]=(cat[x.c]||0)+v}});
+ h+=`<div class="card"><b>ক্যাটাগরি অনুযায়ী খরচ</b>${Object.keys(cat).map(k=>`<div class="row"><span>${k}</span><span class="r">৳${bn(cat[k])}</span></div>`).join('')}<div class="row"><span>মোট খাবার (দৈনিক এন্ট্রি)</span><span class="r">${bn(s.feed)} কেজি</span></div></div>`;
+ $('s').innerHTML=h;
+ $('el').innerHTML=`<b>খরচের তালিকা</b>`+S.e.slice().reverse().map(x=>`<div class="row"><div>${x.n}<div class="m">${bn(x.q)} × ৳${bn(x.p)} • ${x.c} • ${x.d}</div><select class="sm" onchange="setB(${x.id},this.value)"><option value="0" ${x.b==0?'selected':''}>সব ব্যাচ (ভাগ)</option>${S.b.map(b=>`<option value="${b.id}" ${x.b==b.id?'selected':''}>${b.name}</option>`).join('')}</select></div><div class="r">৳${bn(x.q*x.p)}</div><button class="x" onclick="del('e',${x.id})">✕</button></div>`).join('');
+ const L=S.d.filter(x=>cur=='all'||x.b==cur).sort((a,b)=>b.dt.localeCompare(a.dt));
+ $('dl').innerHTML=`<b>দৈনিক রেকর্ড</b>`+(L.length?L.map(x=>`<div class="row"><div>${x.dt} • ${bname(x.b)}<div class="m">${x.m?'মৃত্যু '+bn(x.m)+' • ':''}${x.f?'খাবার '+bn(x.f)+' কেজি • ':''}${x.s?'বিক্রি '+bn(x.s)+' • ':''}${x.w?'ওজন '+bn(x.w)+'গ্রা • ':''}${x.n||''}</div></div><div class="r">${x.i?'৳'+bn(x.i):''}</div><button class="x" onclick="del('d',${x.id})">✕</button></div>`).join(''):'<div class="m">এখনো কোনো এন্ট্রি নেই</div>');
+ renderL();renderBk();
+ $('bl').innerHTML=`<b>ব্যাচের তালিকা</b>`+S.b.map(b=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><input value="${b.name}" onchange="upB(${b.id},'name',this.value)"><div class="grid"><input type="number" value="${b.n}" onchange="upB(${b.id},'n',+this.value||1)"><input type="date" value="${b.hatch}" onchange="upB(${b.id},'hatch',this.value)"></div><button class="x" style="font-size:14px" onclick="delB(${b.id})">🗑 এই ব্যাচ মুছুন</button></div>`).join('');
+}
+const lrem=x=>x.amt+sum(x.adds||[],p=>p.amt)-sum(x.pays,p=>p.amt);
+function renderL(){
+ const owe=sum(S.l.filter(x=>x.t=='in'),lrem),get=sum(S.l.filter(x=>x.t=='out'),lrem);
+ $('ls').innerHTML=`<div class="grid"><div class="card"><div class="lb">আমি দেবো (বাকি ধার)</div><div class="big neg">৳${bn(owe)}</div></div><div class="card"><div class="lb">আমি পাবো (বাকি ধার)</div><div class="big pos">৳${bn(get)}</div></div></div>`;
+ $('ll').innerHTML=`<b>ধারের তালিকা</b>`+(S.l.length?S.l.slice().reverse().map(x=>{const r=lrem(x),i=x.t=='in';return `<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div class="row" style="border:0;padding:0"><div><b>${esc(x.who)}</b><div class="m">${i?'ধার নিলাম':'ধার দিলাম'} ৳${bn(x.amt)} • ${x.dt}${x.note?' • '+esc(x.note):''}</div></div><div class="r ${r<=0?'pos':(i?'neg':'')}">${r<=0?'শোধ ✓':'বাকি ৳'+bn(r)}</div><button class="x" onclick="delL(${x.id})">🗑</button></div>${x.pays.map(p=>`<div class="m">↳ ${p.dt}: ${i?'পরিশোধ করলাম':'ফেরত পেলাম'} ৳${bn(p.amt)}</div>`).join('')}${(x.adds||[]).map(p=>`<div class="m">↳ ${p.dt}: ${i?'আরো নিলাম':'আরো দিলাম'} ৳${bn(p.amt)}</div>`).join('')}<div style="display:flex;gap:6px;margin-top:6px">${r>0?`<button class="add" style="padding:8px;font-size:14px" onclick="payL(${x.id})">${i?'+ পরিশোধ করলাম':'+ ফেরত পেলাম'}</button>`:''}<button class="add" style="padding:8px;font-size:14px;background:#4a4a4a" onclick="moreL(${x.id})">${i?'+ আরো নিলাম':'+ আরো দিলাম'}</button></div></div>`}).join(''):'<div class="m">এখনো কোনো ধার নেই</div>');
+}
+function addL(){const w=$('lw').value.trim(),a=+$('la').value;if(!w||!a)return alert('নাম ও টাকা দিন');
+ S.l.push({id:S.id++,t:$('lt').value,who:w,amt:a,dt:$('ld').value||today,note:$('ln').value.trim(),pays:[]});sv();$('lw').value=$('la').value=$('ln').value='';renderL()}
+function ask(msg,type){return new Promise(r=>{const mo=$('mo'),mi=$('mi');$('mm').textContent=msg;mi.style.display=type?'block':'none';mi.type=type||'text';mi.value='';mo.style.display='flex';if(type)setTimeout(()=>mi.focus(),50);
+ const done=v=>{mo.style.display='none';$('mk').onclick=$('mc').onclick=null;r(v)};$('mk').onclick=()=>done(type?mi.value:true);$('mc').onclick=()=>done(null)})}
+window.alert=m=>{ask(m);$('mc').style.display='none';const k=$('mk').onclick;$('mk').onclick=()=>{$('mc').style.display='';k()}};
+async function pw(){const v=await ask('মুছতে পাসওয়ার্ড দিন','password');if(v===null)return false;if(v.trim()==='625162')return true;alert('ভুল পাসওয়ার্ড');return false}
+async function payL(id){const x=S.l.find(y=>y.id==id),v=+await ask((x.t=='in'?'কত টাকা পরিশোধ করলেন?':'কত টাকা ফেরত পেলেন?')+' (বাকি ৳'+lrem(x)+')','number');if(!v||v<=0)return;x.pays.push({amt:v,dt:today});sv();renderL()}
+async function moreL(id){const x=S.l.find(y=>y.id==id),v=+await ask(x.t=='in'?'আরো কত টাকা ধার নিলেন?':'আরো কত টাকা ধার দিলেন?','number');if(!v||v<=0)return;x.adds=x.adds||[];x.adds.push({amt:v,dt:today});sv();renderL()}
+async function delB(id){if(S.b.length<2)return alert('অন্তত একটা ব্যাচ থাকতে হবে');if(!await pw())return;S.b=S.b.filter(x=>x.id!==id);S.d=S.d.filter(x=>x.b!=id);S.e=S.e.filter(x=>x.b!=id);if(cur==id)cur='all';sv();render()}
+async function delL(id){if(!await pw())return;S.l=S.l.filter(x=>x.id!==id);sv();renderL()}
+function addE(){const n=$('en').value.trim(),q=+$('eq').value||1,p=+$('ep').value;if(!n||!p)return alert('নাম ও দাম দিন');
+ S.e.push({id:S.id++,n,q,p,c:$('ec').value,d:$('ed').value||today,b:+$('eb').value});sv();$('en').value=$('ep').value='';render()}
+function addD(){S.d.push({id:S.id++,b:+$('db').value,dt:$('dd').value||today,m:$('dm').value,f:$('df').value,s:$('ds').value,i:$('di').value,w:$('dw').value,n:$('dn').value});sv();['dm','df','ds','di','dw','dn'].forEach(i=>$(i).value='');render()}
+function addB(){const n=$('bn').value.trim(),c=+$('bc').value;if(!n||!c)return alert('নাম ও সংখ্যা দিন');
+ const id=Math.max(...S.b.map(b=>b.id))+1;S.b.push({id,name:n,n:c,hatch:$('bh').value||today});cur=id;sv();$('bn').value=$('bc').value='';render()}
+function upB(id,k,v){B(id)[k]=v;sv();render()}
+function setB(id,v){S.e.find(x=>x.id==id).b=+v;sv();render()}
+async function del(t,id){if(!await pw())return;S[t]=S[t].filter(x=>x.id!==id);sv();render()}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['s','e','d','b','l'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t))});
+$('ed').value=$('dd').value=$('bh').value=$('ld').value=today;render();
+(async()=>{try{const u=await claude.use('user'),d=await claude.use('db');if(!u||!d){cloud='na';renderBk();return}UID=await u.id();if(!UID){cloud='na';renderBk();return}DB=d;
+ const sn=await DB.collection('data/users/'+UID).doc('backup').get();
+ if(sn.exists&&fresh){S=JSON.parse(sn.data().j);if(!S.l)S.l=[];try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap()}
+ ready=true;cloudSave();render()}catch(e){cloud='na';renderBk()}})();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
