@@ -24,6 +24,9 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
 .row:last-child{border:0}.x{background:none;border:0;color:var(--rd);font-size:18px}.r{text-align:right;font-weight:600}.m{color:var(--mu);font-size:12px}
 .pos{color:var(--gn)}.neg{color:var(--rd)}.hide{display:none}.note{font-size:12px;color:var(--mu);margin-top:6px}
 #mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}#mo .bx{background:var(--card);color:var(--tx);border-radius:14px;padding:16px;width:100%;max-width:340px}#mo .bt{display:flex;gap:8px;margin-top:6px}#mo button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:15px}#mo button.ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+#mp{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:98;padding:20px}#mp .bx{background:var(--card);color:var(--tx);border-radius:14px;padding:16px;width:100%;max-width:340px;max-height:85vh;overflow:auto}#mp .bt{display:flex;gap:8px;margin-top:10px}#mp button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:15px}#mp button.ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ck{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd);font-size:15px;gap:8px}.ck input{width:auto;margin:0;padding:0;flex:none}
+.pick{width:100%;text-align:left;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:15px;margin-bottom:6px}.pick.sm{width:auto;padding:4px 8px;font-size:12px;margin:4px 0 0}
 .hd{display:flex;align-items:center;gap:10px;margin:4px 0 10px}.hd img{width:66px;height:62px;border-radius:12px;background:#f7f7f2;object-fit:contain;border:1px solid var(--bd)}.hd .bn{font-size:21px;font-weight:800;color:var(--ac);letter-spacing:.5px;line-height:1.1}
 </style></head><body>
 <div class="hd"><img alt="Adnan Agro" src="logo.jpg"><div><div class="bn">Adnan Agro</div><div class="m">দেশি মুরগির বাচ্চার হিসাব</div></div></div>
@@ -36,10 +39,10 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
  <div class="card"><b>নতুন খরচ</b><br>
   <input id="en" placeholder="কী কিনলেন (যেমন: ফিড)">
   <div class="grid"><input id="eq" type="number" placeholder="পরিমাণ" value="1"><input id="ep" type="number" placeholder="একক দাম (৳)"></div>
-  <select id="ec"><option>সরঞ্জাম</option><option>খাবার</option><option>ওষুধ</option><option>অন্যান্য</option></select>
-  <div class="lb">কোন ব্যাচের জন্য?</div><select id="eb"></select>
+  <select id="ec"><option>সরঞ্জাম</option><option>খাবার</option><option>ওষুধ</option><option>ভ্যাক্সিন</option><option>অন্যান্য</option></select>
+  <div class="lb">কোন ব্যাচের জন্য?</div><button type="button" class="pick" id="ebb" onclick="pickE()"></button>
   <input id="ed" type="date"><button class="add" onclick="addE()">খরচ যোগ করুন</button>
-  <div class="note">"সব ব্যাচ" দিলে খরচটা বাচ্চার সংখ্যা অনুযায়ী সব ব্যাচে ভাগ হবে (যেমন ব্রুডিং টিন, বালব, পাত্র)।</div></div>
+  <div class="note">একাধিক ব্যাচ টিক দিলে খরচটা বাচ্চার সংখ্যা অনুযায়ী ওই ব্যাচগুলোতে ভাগ হবে (যেমন ২-৩ ব্যাচের জন্য একবারে কেনা ওষুধ)। ভ্যাক্সিন প্রতি ব্যাচের আলাদা, তাই শুধু সেই ব্যাচ বেছে নিন।<br><b>বাচ্চা প্রতি খরচে শুধু খাবার + ওষুধ + ভ্যাক্সিন ধরা হয়।</b> সরঞ্জাম (লাইট, পাত্র ইত্যাদি) ও অন্যান্য ধরা হয় না, তবে মোট খরচ ও লাভ-ক্ষতিতে থাকে।</div></div>
  <div class="card" id="el"></div>
 </div>
 
@@ -76,6 +79,7 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
  <div class="card" id="ll"></div>
 </div>
 
+<div id="mp"></div>
 <div id="mo"><div class="bx"><div id="mm" style="margin-bottom:10px"></div><input id="mi" inputmode="numeric"><div class="bt"><button id="mc">বাতিল</button><button class="ok" id="mk">ঠিক আছে</button></div></div></div>
 <script>
 const K='murgi_v2',T=new Date();
@@ -106,23 +110,44 @@ const bname=id=>id==0?'সব ব্যাচ':(B(id)||{name:'?'}).name;
 const age=b=>Math.max(0,Math.round((new Date(today)-new Date(b.hatch))/864e5));
 const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
 const totN=()=>sum(S.b,b=>+b.n)||1;
+const PC=['খাবার','ওষুধ','ভ্যাক্সিন'],CATS=['সরঞ্জাম','খাবার','ওষুধ','ভ্যাক্সিন','অন্যান্য'];
+const tg=x=>(x.b==0?S.b.map(b=>b.id):(x.b==-1?(x.bs||[]):[+x.b])).filter(i=>B(i));
+const part=(x,bid)=>{const t=tg(x);if(!t.includes(+bid))return 0;const tot=sum(t,i=>+B(i).n)||1;return x.q*x.p*(+B(bid).n)/tot};
+const elab=x=>x.b==0?'সব ব্যাচ (ভাগ)':(tg(x).map(bname).join(' + ')||'—');
 function stats(bid){ // bid: 'all' or id
  const bs=bid=='all'?S.b:[B(bid)],N=sum(bs,b=>+b.n);
- const sharedTot=sum(S.e.filter(x=>x.b==0),x=>x.q*x.p);
- const direct=sum(S.e.filter(x=>bid=='all'?x.b!=0:x.b==bid),x=>x.q*x.p);
- const cost=direct+(bid=='all'?sharedTot:sharedTot*N/totN());
+ const f=bid=='all'?(x=>x.q*x.p):(x=>part(x,bid));
+ const cost=sum(S.e,f),fm=sum(S.e.filter(x=>PC.includes(x.c)),f);
  const L=S.d.filter(x=>bid=='all'||x.b==bid);
  const dead=sum(L,x=>+x.m||0),sold=sum(L,x=>+x.s||0),inc=sum(L,x=>+x.i||0),feed=sum(L,x=>+x.f||0);
- return{N,cost,direct,shared:cost-direct,dead,sold,inc,feed,alive:N-dead-sold,pr:inc-cost}
+ return{N,cost,fm,oth:cost-fm,dead,sold,inc,feed,alive:N-dead-sold,pr:inc-cost}
 }
+let eSel=0;
+const selLabel=v=>v===0?'সব ব্যাচ (ভাগ হবে)':(v.map(bname).join(' + '));
+function updEb(){if(eSel!==0){eSel=eSel.filter(i=>B(i));if(!eSel.length)eSel=0}$('ebb').textContent='👉 '+selLabel(eSel)+'  ▾'}
+function pickB(sel){return new Promise(r=>{
+ const m=$('mp'),ids=sel===0?[]:sel;
+ m.innerHTML='<div class="bx"><div style="margin-bottom:8px"><b>কোন কোন ব্যাচের খরচ?</b></div><label class="ck"><input type="checkbox" id="pk0"'+(sel===0?' checked':'')+'> সব ব্যাচ (নতুন ব্যাচসহ, ভাগ হবে)</label>'+S.b.map(b=>'<label class="ck"><input type="checkbox" class="pk" value="'+b.id+'"'+(ids.includes(b.id)?' checked':'')+'> <span>'+esc(b.name)+' <span class="m">('+bn(b.n)+' টি)</span></span></label>').join('')+'<div class="note">একাধিক ব্যাচে টিক দিলে খরচটা বাচ্চার সংখ্যা অনুযায়ী ভাগ হবে।</div><div class="bt"><button id="pcn">বাতিল</button><button class="ok" id="pok">ঠিক আছে</button></div></div>';
+ m.style.display='flex';
+ const a0=$('pk0'),cs=[...m.querySelectorAll('.pk')];
+ a0.onchange=()=>{if(a0.checked)cs.forEach(c=>c.checked=false)};
+ cs.forEach(c=>c.onchange=()=>{if(c.checked)a0.checked=false});
+ const done=v=>{m.style.display='none';m.innerHTML='';r(v)};
+ $('pcn').onclick=()=>done(null);
+ $('pok').onclick=()=>{if(a0.checked)return done(0);const v=cs.filter(c=>c.checked).map(c=>+c.value);done(v.length?v:null)};
+})}
+async function pickE(){const v=await pickB(eSel);if(v===null)return;eSel=v;updEb()}
+async function editB(id){const x=S.e.find(y=>y.id==id),v=await pickB(x.b==0?0:tg(x));if(v===null)return;
+ if(v===0){x.b=0;delete x.bs}else if(v.length==1){x.b=v[0];delete x.bs}else{x.b=-1;x.bs=v}sv();render()}
+function setC(id,v){S.e.find(x=>x.id==id).c=v;sv();render()}
 function fillSel(){
  const opts=S.b.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
  $('cur').innerHTML='<option value="all">📊 সব ব্যাচ (মোট ইনভেস্ট)</option>'+opts;$('cur').value=cur;
- const keep=[$('eb').value,$('db').value];
- $('eb').innerHTML='<option value="0">সব ব্যাচ (ভাগ হবে)</option>'+opts;
+ const keep=$('db').value;
  $('db').innerHTML=opts;
- if(keep[0])$('eb').value=keep[0];if(keep[1])$('db').value=keep[1];
- if(cur!='all'){$('eb').value=$('eb').value;$('db').value=cur}
+ if(keep&&B(keep))$('db').value=keep;
+ if(cur!='all')$('db').value=cur;
+ updEb();
 }
 function render(){
  fillSel();
@@ -132,15 +157,15 @@ function render(){
  <div class="card"><div class="lb">জীবিত</div><div class="big">${bn(s.alive)}</div></div>
  <div class="card"><div class="lb">মৃত্যু</div><div class="big">${bn(s.dead)}</div></div>
  <div class="card"><div class="lb">${cur=='all'?'মোট ইনভেস্ট':'এই ব্যাচের খরচ'}</div><div class="big">৳${bn(s.cost)}</div></div>
- <div class="card"><div class="lb">প্রতি বাচ্চায় খরচ</div><div class="big">৳${bn(s.cost/s.N)}</div></div>
+ <div class="card"><div class="lb">প্রতি বাচ্চায় খরচ <span style="font-size:11px">(খাবার+ওষুধ)</span></div><div class="big">৳${bn(s.fm/s.N)}</div></div>
  <div class="card"><div class="lb">মোট আয়</div><div class="big">৳${bn(s.inc)}</div></div>
  <div class="card"><div class="lb">লাভ / ক্ষতি</div><div class="big ${s.pr>=0?'pos':'neg'}">৳${bn(s.pr)}</div></div></div>`;
- if(cur!='all')h+=`<div class="card"><b>খরচের ভাঙ্গা</b><div class="row"><span>সরাসরি এই ব্যাচের</span><span class="r">৳${bn(s.direct)}</span></div><div class="row"><span>শেয়ার্ড (সরঞ্জাম ইত্যাদির ভাগ)</span><span class="r">৳${bn(s.shared)}</span></div></div>`;
- else h+=`<div class="card"><b>ব্যাচ অনুযায়ী খরচ</b>${S.b.map(b=>{const t=stats(b.id);return `<div class="row"><span>${b.name} <span class="m">(${bn(b.n)} টি)</span></span><span class="r">৳${bn(t.cost)}</span></div>`}).join('')}</div>`;
- const cat={};S.e.forEach(x=>{if(cur=='all'||x.b==cur||x.b==0){const v=x.q*x.p*(cur!='all'&&x.b==0?B(cur).n/totN():1);cat[x.c]=(cat[x.c]||0)+v}});
- h+=`<div class="card"><b>ক্যাটাগরি অনুযায়ী খরচ</b>${Object.keys(cat).map(k=>`<div class="row"><span>${k}</span><span class="r">৳${bn(cat[k])}</span></div>`).join('')}<div class="row"><span>মোট খাবার (দৈনিক এন্ট্রি)</span><span class="r">${bn(s.feed)} কেজি</span></div></div>`;
+ h+=`<div class="card"><b>খরচের ভাঙ্গা</b><div class="row"><span>খাবার + ওষুধ + ভ্যাক্সিন<div class="m">বাচ্চা প্রতি হিসাবে ধরা হয়</div></span><span class="r">৳${bn(s.fm)}</span></div><div class="row"><span>সরঞ্জাম ও অন্যান্য<div class="m">বাচ্চা প্রতি হিসাবের বাইরে</div></span><span class="r">৳${bn(s.oth)}</span></div></div>`;
+ if(cur=='all')h+=`<div class="card"><b>ব্যাচ অনুযায়ী খরচ</b>${S.b.map(b=>{const t=stats(b.id);return `<div class="row"><span>${b.name} <span class="m">(${bn(b.n)} টি)</span><div class="m">বাচ্চা প্রতি ৳${bn(t.fm/t.N)} • মোট খরচ ৳${bn(t.cost)}</div></span><span class="r">৳${bn(t.fm)}</span></div>`}).join('')}<div class="m" style="margin-top:6px">ডানে: খাবার+ওষুধ+ভ্যাক্সিনের খরচ</div></div>`;
+ const f=cur=='all'?(x=>x.q*x.p):(x=>part(x,cur));const cat={};S.e.forEach(x=>{const v=f(x);if(v)cat[x.c]=(cat[x.c]||0)+v});
+ h+=`<div class="card"><b>ক্যাটাগরি অনুযায়ী খরচ</b>${Object.keys(cat).map(k=>`<div class="row"><span>${k}${PC.includes(k)?' <span class="m">(বাচ্চা প্রতি হিসাবে)</span>':''}</span><span class="r">৳${bn(cat[k])}</span></div>`).join('')}<div class="row"><span>মোট খাবার (দৈনিক এন্ট্রি)</span><span class="r">${bn(s.feed)} কেজি</span></div></div>`;
  $('s').innerHTML=h;
- $('el').innerHTML=`<b>খরচের তালিকা</b>`+S.e.slice().reverse().map(x=>`<div class="row"><div>${x.n}<div class="m">${bn(x.q)} × ৳${bn(x.p)} • ${x.c} • ${x.d}</div><select class="sm" onchange="setB(${x.id},this.value)"><option value="0" ${x.b==0?'selected':''}>সব ব্যাচ (ভাগ)</option>${S.b.map(b=>`<option value="${b.id}" ${x.b==b.id?'selected':''}>${b.name}</option>`).join('')}</select></div><div class="r">৳${bn(x.q*x.p)}</div><button class="x" onclick="del('e',${x.id})">✕</button></div>`).join('');
+ $('el').innerHTML=`<b>খরচের তালিকা</b>`+S.e.slice().reverse().map(x=>`<div class="row"><div>${esc(x.n)}<div class="m">${bn(x.q)} × ৳${bn(x.p)} • ${x.d}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><select class="sm" onchange="setC(${x.id},this.value)">${CATS.map(c=>`<option ${x.c==c?'selected':''}>${c}</option>`).join('')}</select><button class="pick sm" onclick="editB(${x.id})">👉 ${esc(elab(x))} ✎</button></div></div><div class="r">৳${bn(x.q*x.p)}</div><button class="x" onclick="del('e',${x.id})">✕</button></div>`).join('');
  const L=S.d.filter(x=>cur=='all'||x.b==cur).sort((a,b)=>b.dt.localeCompare(a.dt));
  $('dl').innerHTML=`<b>দৈনিক রেকর্ড</b>`+(L.length?L.map(x=>`<div class="row"><div>${x.dt} • ${bname(x.b)}<div class="m">${x.m?'মৃত্যু '+bn(x.m)+' • ':''}${x.f?'খাবার '+bn(x.f)+' কেজি • ':''}${x.s?'বিক্রি '+bn(x.s)+' • ':''}${x.w?'ওজন '+bn(x.w)+'গ্রা • ':''}${x.n||''}</div></div><div class="r">${x.i?'৳'+bn(x.i):''}</div><button class="x" onclick="del('d',${x.id})">✕</button></div>`).join(''):'<div class="m">এখনো কোনো এন্ট্রি নেই</div>');
  renderL();renderBk();
@@ -160,15 +185,14 @@ window.alert=m=>{ask(m);$('mc').style.display='none';const k=$('mk').onclick;$('
 async function pw(){const v=await ask('মুছতে পাসওয়ার্ড দিন','password');if(v===null)return false;if(v.trim()==='625162')return true;alert('ভুল পাসওয়ার্ড');return false}
 async function payL(id){const x=S.l.find(y=>y.id==id),v=+await ask((x.t=='in'?'কত টাকা পরিশোধ করলেন?':'কত টাকা ফেরত পেলেন?')+' (বাকি ৳'+lrem(x)+')','number');if(!v||v<=0)return;x.pays.push({amt:v,dt:today});sv();renderL()}
 async function moreL(id){const x=S.l.find(y=>y.id==id),v=+await ask(x.t=='in'?'আরো কত টাকা ধার নিলেন?':'আরো কত টাকা ধার দিলেন?','number');if(!v||v<=0)return;x.adds=x.adds||[];x.adds.push({amt:v,dt:today});sv();renderL()}
-async function delB(id){if(S.b.length<2)return alert('অন্তত একটা ব্যাচ থাকতে হবে');if(!await pw())return;S.b=S.b.filter(x=>x.id!==id);S.d=S.d.filter(x=>x.b!=id);S.e=S.e.filter(x=>x.b!=id);if(cur==id)cur='all';sv();render()}
+async function delB(id){if(S.b.length<2)return alert('অন্তত একটা ব্যাচ থাকতে হবে');if(!await pw())return;S.b=S.b.filter(x=>x.id!==id);S.d=S.d.filter(x=>x.b!=id);S.e=S.e.filter(x=>{if(x.b==-1){x.bs=(x.bs||[]).filter(i=>i!=id);if(x.bs.length==1){x.b=x.bs[0];delete x.bs}return !x.bs||x.bs.length>0}return x.b!=id});if(cur==id)cur='all';sv();render()}
 async function delL(id){if(!await pw())return;S.l=S.l.filter(x=>x.id!==id);sv();renderL()}
 function addE(){const n=$('en').value.trim(),q=+$('eq').value||1,p=+$('ep').value;if(!n||!p)return alert('নাম ও দাম দিন');
- S.e.push({id:S.id++,n,q,p,c:$('ec').value,d:$('ed').value||today,b:+$('eb').value});sv();$('en').value=$('ep').value='';render()}
+ S.e.push({id:S.id++,n,q,p,c:$('ec').value,d:$('ed').value||today,...(eSel===0?{b:0}:eSel.length==1?{b:eSel[0]}:{b:-1,bs:eSel.slice()})});sv();$('en').value=$('ep').value='';render()}
 function addD(){S.d.push({id:S.id++,b:+$('db').value,dt:$('dd').value||today,m:$('dm').value,f:$('df').value,s:$('ds').value,i:$('di').value,w:$('dw').value,n:$('dn').value});sv();['dm','df','ds','di','dw','dn'].forEach(i=>$(i).value='');render()}
 function addB(){const n=$('bn').value.trim(),c=+$('bc').value;if(!n||!c)return alert('নাম ও সংখ্যা দিন');
  const id=Math.max(...S.b.map(b=>b.id))+1;S.b.push({id,name:n,n:c,hatch:$('bh').value||today});cur=id;sv();$('bn').value=$('bc').value='';render()}
 function upB(id,k,v){B(id)[k]=v;sv();render()}
-function setB(id,v){S.e.find(x=>x.id==id).b=+v;sv();render()}
 async function del(t,id){if(!await pw())return;S[t]=S[t].filter(x=>x.id!==id);sv();render()}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['s','e','d','b','l'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t))});
 $('ed').value=$('dd').value=$('bh').value=$('ld').value=today;render();
