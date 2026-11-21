@@ -32,11 +32,19 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
 #lg .ck{border:0;justify-content:center;font-size:13px;color:var(--mu)}#lg .er{color:var(--rd);font-size:13px;min-height:18px;margin:2px 0 6px}
 .lo{margin-left:auto;background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:6px 10px;font-size:12px}
 .hd{display:flex;align-items:center;gap:10px;margin:4px 0 10px}.hd img{width:66px;height:62px;border-radius:12px;background:#f7f7f2;object-fit:contain;border:1px solid var(--bd)}.hd .bn{font-size:21px;font-weight:800;color:var(--ac);letter-spacing:.5px;line-height:1.1}
+.tabs{flex-wrap:wrap}.tabs button.mtab{flex:1 1 100%}
+.mb{background:#fff1d1;color:#8a5200;border-radius:14px;padding:14px;text-align:center;font-weight:700;margin:0 0 10px;font-size:15px}.mb.ok{background:#dff3e6;color:var(--gn)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mb{background:#3d2e16;color:#f2a93b}:root:not([data-theme="light"]) .mb.ok{background:#1f3a2a}}
+.mdc{border-left:4px solid var(--rd)}.mdc.ok{border-left-color:var(--gn)}.tdy{border:2px solid var(--ac)}
+.mr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}.mr:last-child{border:0}.mr.dn .mn{color:var(--gn)}.mn{font-weight:700;font-size:15px}.mx{flex:1}.wn{color:var(--rd)}
+.mk2,.mu{padding:8px 10px;border-radius:10px;font-size:13px;white-space:nowrap;border:1px solid var(--ac);background:var(--ac);color:#fff}.mu{background:none;color:var(--rd);border-color:var(--bd)}
+.sl{font-size:12px;color:var(--mu);margin:8px 0 0;font-weight:600}
+.tg{font-size:11px;background:var(--bd);color:var(--mu);border-radius:6px;padding:1px 6px;margin-left:4px;font-weight:400}
 </style></head><body class="lock">
 <div id="lg"><form class="bx" id="lgf" autocomplete="off"><img alt="Adnan Agro" src="logo.jpg"><div class="bn" style="font-size:22px;font-weight:800;color:var(--ac);margin:8px 0 2px">Adnan Agro</div><div class="m" style="margin-bottom:14px">লগইন করতে পাসওয়ার্ড দিন</div><input id="lgp" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password"><label class="ck"><input type="checkbox" id="lgr" checked> এই ডিভাইসে লগইন মনে রাখুন</label><div class="er" id="lge"></div><button class="add" type="submit">প্রবেশ করুন</button></form></div>
 <div class="hd"><img alt="Adnan Agro" src="logo.jpg"><div><div class="bn">Adnan Agro</div><div class="m">দেশি মুরগির বাচ্চার হিসাব</div></div><button class="lo" onclick="logout()">🔒 লগআউট</button></div>
 <select id="cur" onchange="cur=this.value;render()"></select>
-<div class="tabs"><button data-t="s" class="on">সারাংশ</button><button data-t="e">খরচ</button><button data-t="d">দৈনিক</button><button data-t="b">ব্যাচ</button><button data-t="l">ধার</button></div>
+<div class="tabs"><button data-t="s" class="on">সারাংশ</button><button data-t="e">খরচ</button><button data-t="d">দৈনিক</button><button data-t="b">ব্যাচ</button><button data-t="l">ধার</button><button data-t="m" class="mtab">💊 ওষুধ ও ভ্যাক্সিন</button></div>
 
 <div id="s"></div>
 
@@ -84,6 +92,18 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
  <div class="card" id="ll"></div>
 </div>
 
+<div id="m" class="hide">
+ <select id="mbs" onchange="mbSel=+this.value;renderM()"></select>
+ <div id="mt1"></div>
+ <div class="card"><b>✍️ নিজে ওষুধ / পরামর্শ লিখুন</b><br>
+  <div class="lb">তারিখ</div><input id="mcd" type="date">
+  <select id="mcs"><option value="m">🌅 সকাল থেকে দুপুর</option><option value="a">☀️ দুপুর থেকে রাত</option><option value="n">🌙 রাত থেকে সকাল</option><option value="all">🕐 সারাদিন / টানা</option></select>
+  <input id="mcn" placeholder="ওষুধের নাম / কাজ (যেমন: ভিটামিন সি)">
+  <input id="mcx" placeholder="মাত্রা / নোট (যেমন: ১ লিটার পানিতে ১ গ্রাম)">
+  <button class="add" onclick="addC()">যোগ করুন</button>
+  <div class="note">এই তারিখে এটা উপরের “আজ করণীয়” তে আসবে, আর নিচের তালিকায় ওই দিনের মধ্যে দেখাবে। আজকের আগের তারিখের নোট করা না হলে করণীয়তে থেকে যাবে।</div></div>
+ <div id="mt2"></div>
+</div>
 <div id="mp"></div>
 <div id="mo"><div class="bx"><div id="mm" style="margin-bottom:10px"></div><input id="mi" inputmode="numeric"><div class="bt"><button id="mc">বাতিল</button><button class="ok" id="mk">ঠিক আছে</button></div></div></div>
 <script>
@@ -98,7 +118,7 @@ if(!S){
  if(o){S={b:[{id:1,name:'ব্যাচ ১',n:o.n,hatch:o.hatch}],e:o.e.map(x=>({id:x.id,n:x.n,q:x.q,p:x.p,c:x.c,d:x.d,b:shared0.includes(x.n)?0:1})),d:o.d.map(x=>({...x,b:1})),id:o.id+1}}
  else S={b:[{id:1,name:'ব্যাচ ১',n:137,hatch:'2026-11-14'}],e:E0.map((x,i)=>({id:i+1,n:x[0],q:x[1],p:x[2],c:x[3],d:today,b:shared0.includes(x[0])?0:1})),d:[],id:100};
 }
-if(!S.l)S.l=[];
+if(!S.l)S.l=[];if(!S.md)S.md={};if(!S.mc)S.mc=[];
 const AS='এককালীন (এসেট)';
 function mig(){if(S.mig)return;S.e.forEach(x=>{if(x.c=='সরঞ্জাম'&&shared0.includes(x.n))x.c=AS;else if(x.n=='তুষ')x.c='সরঞ্জাম'});S.mig=1;try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
 mig();
@@ -110,7 +130,7 @@ const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap()};
 const ago=t=>new Date(t).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});
 function renderBk(){const el=$('bk');if(!el)return;let a=[];try{a=JSON.parse(localStorage.getItem(BK)||'[]')}catch(e){}
  el.innerHTML='<b>🛡️ অটো ব্যাকআপ</b><div class="m" style="margin:6px 0">প্রতি এন্ট্রির পর ফোনে অটো সেভ হয়। শেষ ১০টা কপি:</div>'+a.map((x,i)=>'<div class="row"><span>'+ago(x.t)+'</span><button class="add" style="width:auto;padding:6px 12px;font-size:13px" onclick="restoreBk('+i+')">ফিরিয়ে আনুন</button></div>').join('')}
-async function restoreBk(i){if(!await pw())return;try{const a=JSON.parse(localStorage.getItem(BK));S=JSON.parse(a[i].j);if(!S.l)S.l=[];mig();sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
+async function restoreBk(i){if(!await pw())return;try{const a=JSON.parse(localStorage.getItem(BK));S=JSON.parse(a[i].j);if(!S.l)S.l=[];if(!S.md)S.md={};if(!S.mc)S.mc=[];mig();sv();render()}catch(e){alert('ফিরিয়ে আনা যায়নি')}}
 const bn=n=>Number(n).toLocaleString('bn-BD',{maximumFractionDigits:2});
 const $=i=>document.getElementById(i);
 const B=id=>S.b.find(x=>x.id==id);
@@ -161,7 +181,7 @@ function fillSel(){
 function render(){
  fillSel();
  const s=stats(cur),title=cur=='all'?'সব ব্যাচ মিলিয়ে':bname(cur);
- let h=`<div class="card"><b>${title}</b><div class="m">${cur=='all'?S.b.map(b=>b.name+': '+bn(age(b))+' দিন').join(' • '):'বয়স '+bn(age(B(cur)))+' দিন • বাচ্চা '+bn(s.N)+' টি'}</div></div>
+ let h=todayCard(cur=='all'?S.b:[B(cur)],1)+`<div class="card"><b>${title}</b><div class="m">${cur=='all'?S.b.map(b=>b.name+': '+bn(age(b))+' দিন').join(' • '):'বয়স '+bn(age(B(cur)))+' দিন • বাচ্চা '+bn(s.N)+' টি'}</div></div>
  <div class="grid">
  <div class="card"><div class="lb">জীবিত</div><div class="big">${bn(s.alive)}</div></div>
  <div class="card"><div class="lb">মৃত্যু</div><div class="big">${bn(s.dead)}</div></div>
@@ -179,7 +199,7 @@ function render(){
  $('el').innerHTML=`<b>খরচের তালিকা</b>`+S.e.slice().reverse().map(x=>`<div class="row"><div>${esc(x.n)}<div class="m">${bn(x.q)} × ৳${bn(x.p)} • ${x.d}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><select class="sm" onchange="setC(${x.id},this.value)">${CATS.map(c=>`<option ${x.c==c?'selected':''}>${c}</option>`).join('')}</select>${isA(x)?'<span class="m" style="align-self:center">এসেট (ব্যাচে ধরা হয় না)</span>':`<button class="pick sm" onclick="editB(${x.id})">👉 ${esc(elab(x))} ✎</button>`}</div></div><div class="r">৳${bn(x.q*x.p)}</div><button class="x" onclick="del('e',${x.id})">✕</button></div>`).join('');
  const L=S.d.filter(x=>cur=='all'||x.b==cur).sort((a,b)=>b.dt.localeCompare(a.dt));
  $('dl').innerHTML=`<b>দৈনিক রেকর্ড</b>`+(L.length?L.map(x=>`<div class="row"><div>${x.dt} • ${bname(x.b)}<div class="m">${x.m?'মৃত্যু '+bn(x.m)+' • ':''}${x.f?'খাবার '+bn(x.f)+' কেজি • ':''}${x.s?'বিক্রি '+bn(x.s)+' • ':''}${x.w?'ওজন '+bn(x.w)+'গ্রা • ':''}${x.n||''}</div></div><div class="r">${x.i?'৳'+bn(x.i):''}</div><button class="x" onclick="del('d',${x.id})">✕</button></div>`).join(''):'<div class="m">এখনো কোনো এন্ট্রি নেই</div>');
- renderL();renderBk();
+ renderL();renderBk();renderM();
  $('bl').innerHTML=`<b>ব্যাচের তালিকা</b>`+S.b.map(b=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><input value="${b.name}" onchange="upB(${b.id},'name',this.value)"><div class="grid"><input type="number" value="${b.n}" onchange="upB(${b.id},'n',+this.value||1)"><input type="date" value="${b.hatch}" onchange="upB(${b.id},'hatch',this.value)"></div><button class="x" style="font-size:14px" onclick="delB(${b.id})">🗑 এই ব্যাচ মুছুন</button></div>`).join('');
 }
 const lrem=x=>x.amt+sum(x.adds||[],p=>p.amt)-sum(x.pays,p=>p.amt);
@@ -196,7 +216,7 @@ window.alert=m=>{ask(m);$('mc').style.display='none';const k=$('mk').onclick;$('
 async function pw(){const v=await ask('মুছতে পাসওয়ার্ড দিন','password');if(v===null)return false;if(v.trim()==='625162')return true;alert('ভুল পাসওয়ার্ড');return false}
 async function payL(id){const x=S.l.find(y=>y.id==id),v=+await ask((x.t=='in'?'কত টাকা পরিশোধ করলেন?':'কত টাকা ফেরত পেলেন?')+' (বাকি ৳'+lrem(x)+')','number');if(!v||v<=0)return;x.pays.push({amt:v,dt:today});sv();renderL()}
 async function moreL(id){const x=S.l.find(y=>y.id==id),v=+await ask(x.t=='in'?'আরো কত টাকা ধার নিলেন?':'আরো কত টাকা ধার দিলেন?','number');if(!v||v<=0)return;x.adds=x.adds||[];x.adds.push({amt:v,dt:today});sv();renderL()}
-async function delB(id){if(S.b.length<2)return alert('অন্তত একটা ব্যাচ থাকতে হবে');if(!await pw())return;S.b=S.b.filter(x=>x.id!==id);S.d=S.d.filter(x=>x.b!=id);S.e=S.e.filter(x=>{if(x.b==-1){x.bs=(x.bs||[]).filter(i=>i!=id);if(x.bs.length==1){x.b=x.bs[0];delete x.bs}return !x.bs||x.bs.length>0}return x.b!=id});if(cur==id)cur='all';sv();render()}
+async function delB(id){if(S.b.length<2)return alert('অন্তত একটা ব্যাচ থাকতে হবে');if(!await pw())return;S.b=S.b.filter(x=>x.id!==id);S.d=S.d.filter(x=>x.b!=id);S.e=S.e.filter(x=>{if(x.b==-1){x.bs=(x.bs||[]).filter(i=>i!=id);if(x.bs.length==1){x.b=x.bs[0];delete x.bs}return !x.bs||x.bs.length>0}return x.b!=id});S.mc=S.mc.filter(x=>x.b!=id);Object.keys(S.md).forEach(k=>{if(k.split('|')[0]==id)delete S.md[k]});if(cur==id)cur='all';sv();render()}
 async function delL(id){if(!await pw())return;S.l=S.l.filter(x=>x.id!==id);sv();renderL()}
 function addE(){const n=$('en').value.trim(),q=+$('eq').value||1,p=+$('ep').value;if(!n||!p)return alert('নাম ও দাম দিন');
  S.e.push({id:S.id++,n,q,p,c:$('ec').value,d:$('ed').value||today,...(eSel===0||$('ec').value==AS?{b:0}:eSel.length==1?{b:eSel[0]}:{b:-1,bs:eSel.slice()})});sv();$('en').value=$('ep').value='';render()}
@@ -205,8 +225,107 @@ function addB(){const n=$('bn').value.trim(),c=+$('bc').value;if(!n||!c)return a
  const id=Math.max(...S.b.map(b=>b.id))+1;S.b.push({id,name:n,n:c,hatch:$('bh').value||today});cur=id;sv();$('bn').value=$('bc').value='';render()}
 function upB(id,k,v){B(id)[k]=v;sv();render()}
 async function del(t,id){if(!await pw())return;S[t]=S[t].filter(x=>x.id!==id);sv();render()}
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['s','e','d','b','l'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t))});
-$('ed').value=$('dd').value=$('bh').value=$('ld').value=today;render();togE();
+/* ===== ওষুধ ও ভ্যাক্সিন সিস্টেম ===== */
+const ADV='ভ্যাক্সিনের ৬ ঘণ্টা আগে ও পরে ৬ ঘণ্টা AD3E ভিটামিন (১ লিটার পানিতে ১ মিলি)।';
+const SL={m:['🌅','সকাল থেকে দুপুর'],a:['☀️','দুপুর থেকে রাত'],n:['🌙','রাত থেকে সকাল'],all:['🕐','সারাদিন / টানা']};
+// ty: per = প্রতিদিন আলাদা টিক, win = সময়সীমার মধ্যে যেকোনো ১ দিন (একবার টিক), info = শুধু তথ্য
+const MT=[
+ {k:'lyso',ic:'💧',n:'লাইসোভিট',ty:'per',r:[[1,1]],sl:'m',d:'১ লিটার পানিতে ১ গ্রাম, বাচ্চাকে ২ ঘণ্টা খাওয়ান।'},
+ {k:'abx',ic:'💊',n:'অ্যান্টিবায়োটিক: সিপ্রোসিন ও অ্যামোক্সিসিলিন',ty:'per',r:[[1,3]],sl:'all',d:'লাইসোভিটের পর, ১ লিটার পানিতে ১ গ্রাম করে, টানা ৭২ ঘণ্টা (দিন ১–৩)।'},
+ {k:'w4',ic:'🚰',n:'শুধু সাদা পানি',ty:'info',r:[[4,4]],sl:'all',d:'আজ কোনো ওষুধ নয়।'},
+ {k:'rd1',ic:'💉',n:'রানীক্ষেত (BCRDV) ভ্যাক্সিন',ty:'win',r:[[5,5]],sl:'m',d:'ভ্যাক্সিনের ৬ ঘণ্টা আগে AD3E ভিটামিন, আর ভ্যাক্সিন করানোর পর থেকে ৬ ঘণ্টা AD3E ভিটামিন (১ লিটার পানিতে ১ মিলি)।'},
+ {k:'w6',ic:'🚰',n:'সাদা পানি',ty:'info',r:[[6,6]],sl:'all',d:'আজ কোনো ওষুধ নয়।'},
+ {k:'thia',ic:'💊',n:'থায়াবিন অথবা ভিটা থ্রি (যেকোনো ১টি)',ty:'per',r:[[7,9]],sl:'all',d:'১ লিটার পানিতে ১ মিলি, টানা ৭২ ঘণ্টা (দিন ৭–৯)।'},
+ {k:'w10',ic:'🚰',n:'সাদা পানি',ty:'info',r:[[10,10]],sl:'all',d:'৭২ ঘণ্টার পর আবার সাদা পানি।'},
+ {k:'gb1',ic:'💉',n:'গাম্বোরো ভ্যাক্সিন — ১ম ডোজ',ty:'win',r:[[10,13]],sl:'m',d:'১০ থেকে ১৩ তম দিনের যেকোনো ১ দিন। '+ADV},
+ {k:'liv',ic:'🌿',n:'লিভার টনিক',ty:'per',r:[[14,17]],sl:'m',d:'প্রতিদিন সকালে ১ বেলা (১ লিটার পানিতে ১ মিলি)।'},
+ {k:'gb2',ic:'💉',n:'গাম্বোরো ভ্যাক্সিন — ২য় ডোজ',ty:'win',r:[[17,18]],sl:'m',d:'১৭ অথবা ১৮ তম দিনে। '+ADV},
+ {k:'rd2',ic:'💉',n:'রানীক্ষেত ভ্যাক্সিন — ২য় ডোজ (সম্পূর্ণ)',ty:'win',r:[[21,22]],sl:'m',d:'২১ বা ২২ তম দিনে। '+ADV},
+ {k:'w24',ic:'🚰',n:'২৪ ঘণ্টা সাদা পানি',ty:'win',after:'rd2',r:[[22,23]],sl:'all',d:'রানীক্ষেত ২য় ডোজের পরদিন।'},
+ {k:'amino',ic:'🌙',n:'অ্যামাইনোভিট প্লাস (ঐচ্ছিক, ওজন বাড়াতে)',ty:'per',opt:1,r:[[25,28],[35,38],[45,48],[55,58]],sl:'n',d:'১ লিটার পানিতে ১ মিলি, শুধু রাতে। টানা ৪ দিন দেওয়া, ৬ দিন বন্ধ, আবার ৪ দিন।'}
+];
+const ad=(iso,n)=>new Date(Date.parse(iso)+n*864e5).toISOString().slice(0,10);
+const dnum=(b,iso)=>Math.round((Date.parse(iso||today)-Date.parse(b.hatch))/864e5)+1;
+const dfm=iso=>new Date(iso+'T00:00:00Z').toLocaleDateString('bn-BD',{day:'numeric',month:'long',timeZone:'UTC'});
+const inR=(r,n)=>r.some(x=>n>=x[0]&&n<=x[1]);
+const dk=(b,k)=>S.md[b.id+'|'+k]||'';
+const rng=(s,e)=>'দিন '+bn(s)+(e>s?'–'+bn(e):'');
+let mbSel=S.b[0].id,lastCur=null;
+function wr(b,t){if(t.after){const dd=dk(b,t.after);if(dd){const x=dnum(b,ad(dd,1));return[x,x]}}return t.r[0]}
+const mkI=(b,t,key,done,lab)=>({b:b.id,key,ic:t.ic,n:t.n,d:t.d,sl:t.sl,ty:t.ty,opt:t.opt,done,lab:lab||''});
+const mkC=(c,lab)=>({b:c.b,key:'c|'+c.id,ic:'📝',n:c.n,d:c.d,sl:c.sl,ty:'cus',done:c.done||'',lab:lab||'',cid:c.id});
+function todayItems(b){
+ const n=dnum(b),it=[],inf=[];
+ if(!(n>=1))return{n,it,inf};
+ MT.forEach(t=>{
+  if(t.ty=='info'){if(inR(t.r,n))inf.push(t);return}
+  if(t.ty=='per'){if(inR(t.r,n)){const key=t.k+'|'+n;it.push(mkI(b,t,key,dk(b,key)))}return}
+  const w=wr(b,t),s=w[0],e=w[1],dd=dk(b,t.k);
+  if(dd){if(dd==today)it.push(mkI(b,t,t.k,dd));return}
+  if(t.after&&!dk(b,t.after))return;
+  if(n>=s&&n<=e+7)it.push(mkI(b,t,t.k,'',n>e?'⚠️ সময় পার হয়ে গেছে ('+rng(s,e)+')':e>s?(n==e?'আজই শেষ দিন ('+rng(s,e)+')':rng(s,e)+' এর যেকোনো ১ দিন'):''));
+ });
+ S.mc.filter(c=>c.b==b.id&&((!c.done&&c.dt<=today)||c.done==today)).forEach(c=>it.push(mkC(c,!c.done&&c.dt<today?'⚠️ '+dfm(c.dt)+' তারিখের নোট':'')));
+ return{n,it,inf}
+}
+function itH(x,fut,sd){
+ const dn=!!x.done;let btn='';
+ if(x.ty!='info'){btn=dn?`<button class="mu" onclick="mundo(${x.b},'${x.key}')">বাতিল</button>`:(fut?'<span class="m">পরে</span>':`<button class="mk2" onclick="mdone(${x.b},'${x.key}')">✓ করেছি</button>`)}
+ if(sd&&x.ty=='cus')btn+=`<button class="x" onclick="delC(${x.cid})">✕</button>`;
+ return `<div class="mr${dn?' dn':''}"><div class="mx"><div class="mn">${dn?'✅ ':''}${x.ic} ${esc(x.n)}${x.opt?'<span class="tg">ঐচ্ছিক</span>':''}</div>${x.d?'<div class="m">'+esc(x.d)+'</div>':''}${x.lab?'<div class="m wn">'+x.lab+'</div>':''}${dn&&x.ty=='win'?'<div class="m" style="color:var(--gn)">সম্পন্ন · '+dfm(x.done)+'</div>':''}</div><div style="display:flex;gap:4px;align-items:center">${btn}</div></div>`
+}
+function todayCard(bs,link){
+ let pend=0,out='';
+ bs.forEach(b=>{
+  const r=todayItems(b);
+  if(!(r.n>=1)){out+=`<div class="card"><b>${esc(b.name)}</b><div class="m">ব্যাচ এখনো শুরু হয়নি (দিন ১ = ${b.hatch?dfm(b.hatch):'তারিখ দিন'})</div></div>`;return}
+  if(r.n>60&&!r.it.length&&!r.inf.length)return;
+  const np=r.it.filter(x=>!x.done&&!x.opt).length,dc=r.it.filter(x=>x.done).length;pend+=np;
+  out+=`<div class="card mdc${np?'':' ok'}"><div class="row" style="border:0;padding:0 0 4px"><b>${esc(b.name)} · দিন ${bn(r.n)}</b><span class="m">করেছি ${bn(dc)} / ${bn(r.it.length)}</span></div>`
+   +r.it.map(x=>itH(x,false,false)).join('')
+   +r.inf.map(t=>`<div class="mr"><div class="mx"><div class="mn">${t.ic} ${esc(t.n)}</div><div class="m">${esc(t.d)}</div></div></div>`).join('')
+   +(!r.it.length&&!r.inf.length?'<div class="m">আজ কোনো ওষুধ নেই।</div>':'')+'</div>';
+ });
+ return `<div class="mb${pend?'':' ok'}"${link?` onclick="goT('m')" style="cursor:pointer"`:''}>💊 ওষুধ ও ভ্যাক্সিন · ${pend?'আজ '+bn(pend)+'টি করণীয়':'আজকের সব করণীয় শেষ ✅'}</div><div style="font-weight:700;color:var(--gn);margin:4px 2px 6px">আজ করণীয়</div>`+out
+}
+function renderM(){
+ if(cur!=lastCur){lastCur=cur;if(cur!='all'&&B(cur))mbSel=+cur}
+ if(!B(mbSel))mbSel=S.b[0].id;
+ const b=B(mbSel);
+ $('mbs').innerHTML=S.b.map(x=>`<option value="${x.id}"${x.id==mbSel?' selected':''}>${esc(x.name)}</option>`).join('');
+ $('mt1').innerHTML=todayCard([b],false);
+ if(!b.hatch){$('mt2').innerHTML='<div class="card"><div class="m">ব্যাচ ট্যাবে আসার তারিখ দিন।</div></div>';return}
+ const tn=dnum(b),days={},put=(n,x)=>{(days[n]=days[n]||[]).push(x)};
+ MT.forEach(t=>{
+  if(t.ty=='per')t.r.forEach(q=>{for(let n=q[0];n<=q[1];n++){const key=t.k+'|'+n;put(n,mkI(b,t,key,dk(b,key)))}});
+  else if(t.ty=='win'){const w=wr(b,t);put(w[0],mkI(b,t,t.k,dk(b,t.k),w[1]>w[0]?rng(w[0],w[1])+' এর যেকোনো ১ দিন':''))}
+  else put(t.r[0][0],mkI(b,t,'i',''));
+ });
+ S.mc.filter(c=>c.b==b.id).forEach(c=>put(dnum(b,c.dt),mkC(c,'')));
+ const ks=Object.keys(days).map(Number).sort((p,q)=>p-q);
+ $('mt2').innerHTML='<div style="font-weight:700;color:var(--gn);margin:10px 2px 2px">ওষুধ ও ভ্যাক্সিনের পুরো তালিকা</div><div class="note" style="margin:0 2px 8px">দিন ১ = ব্যাচের আসার/ফোটার তারিখ ('+dfm(b.hatch)+')। তারিখ বদলাতে ব্যাচ ট্যাবে যান।</div>'
+  +ks.map(n=>{const isT=n==tn;
+   return `<div class="card${isT?' tdy':''}"><div class="row" style="border:0;padding:0 0 2px"><b>দিন ${bn(n)} · ${dfm(ad(b.hatch,n-1))}</b><span class="m">${isT?'আজ':n<tn?'শেষ':''}</span></div>`
+    +['m','a','n','all'].map(s=>{const L=days[n].filter(x=>x.sl==s);return L.length?`<div class="sl">${SL[s][0]} ${SL[s][1]}</div>`+L.map(x=>itH(x,n>tn,true)).join(''):''}).join('')+'</div>'
+  }).join('');
+}
+async function mdone(bid,key){
+ if(key.slice(0,2)=='c|'){const c=S.mc.find(x=>x.id==key.slice(2));if(c)c.done=today}
+ else{const t=MT.find(x=>x.k==key.split('|')[0]);let d=today;
+  if(t.ty=='win'){const p=ask(t.n+' — কোন তারিখে করেছেন?','date');$('mi').value=today;d=await p;if(!d)return}
+  S.md[bid+'|'+key]=d}
+ sv();render()}
+function mundo(bid,key){
+ if(key.slice(0,2)=='c|'){const c=S.mc.find(x=>x.id==key.slice(2));if(c)c.done=''}
+ else delete S.md[bid+'|'+key];
+ sv();render()}
+function addC(){const n=$('mcn').value.trim();if(!n)return alert('ওষুধের নাম / কাজ লিখুন');
+ S.mc.push({id:S.id++,b:mbSel,dt:$('mcd').value||today,sl:$('mcs').value,n,d:$('mcx').value.trim(),done:''});
+ sv();$('mcn').value=$('mcx').value='';render()}
+async function delC(id){if(!await pw())return;S.mc=S.mc.filter(x=>x.id!=id);sv();render()}
+function goT(t){document.querySelector('.tabs button[data-t="'+t+'"]').click();window.scrollTo(0,0)}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['s','e','d','b','l','m'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t))});
+$('ed').value=$('dd').value=$('bh').value=$('ld').value=$('mcd').value=today;render();togE();
 const cy=(t,seed=0)=>{let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,c;i<t.length;i++){c=t.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return String(4294967296*(2097151&h2)+(h1>>>0))};
 const H1='4894f33c0af711c919ee74f9b9b17e9bb752eae7035d92b977638e07b1bc0c37',H2='2457123609310264',AK='murgi_auth';
 async function okPw(p){p='adnan-agro:'+p;try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')===H1}}catch(e){}return cy(p)===H2}
