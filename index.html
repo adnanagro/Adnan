@@ -43,6 +43,7 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
 </style></head><body class="lock">
 <div id="lg"><form class="bx" id="lgf" autocomplete="off"><img alt="Adnan Agro" src="logo.jpg"><div class="bn" style="font-size:22px;font-weight:800;color:var(--ac);margin:8px 0 2px">Adnan Agro</div><div class="m" style="margin-bottom:14px">লগইন করতে পাসওয়ার্ড দিন</div><input id="lgp" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password"><label class="ck"><input type="checkbox" id="lgr" checked> এই ডিভাইসে লগইন মনে রাখুন</label><div class="er" id="lge"></div><button class="add" type="submit">প্রবেশ করুন</button></form></div>
 <div class="hd"><img alt="Adnan Agro" src="logo.jpg"><div><div class="bn">Adnan Agro</div><div class="m">দেশি মুরগির বাচ্চার হিসাব</div></div><button class="lo" onclick="logout()">🔒 লগআউট</button></div>
+<div id="sy" class="m" style="margin:0 2px 8px"></div>
 <select id="cur" onchange="cur=this.value;render()"></select>
 <div class="tabs"><button data-t="s" class="on">সারাংশ</button><button data-t="e">খরচ</button><button data-t="d">দৈনিক</button><button data-t="b">ব্যাচ</button><button data-t="l">ধার</button><button data-t="m" class="mtab">💊 ওষুধ ও ভ্যাক্সিন</button></div>
 
@@ -106,6 +107,9 @@ select.sm{width:auto;padding:4px;font-size:12px;margin:4px 0 0}
 </div>
 <div id="mp"></div>
 <div id="mo"><div class="bx"><div id="mm" style="margin-bottom:10px"></div><input id="mi" inputmode="numeric"><div class="bt"><button id="mc">বাতিল</button><button class="ok" id="mk">ঠিক আছে</button></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 const K='murgi_v2',T=new Date();
 const today=new Date(T.getTime()-T.getTimezoneOffset()*6e4).toISOString().slice(0,10);
@@ -126,7 +130,8 @@ let cur='all';
 const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const BK='murgi_bk';
 function snap(){try{const a=JSON.parse(localStorage.getItem(BK)||'[]'),j=JSON.stringify(S);if(a.length&&a[0].j===j)return;a.unshift({t:Date.now(),j});localStorage.setItem(BK,JSON.stringify(a.slice(0,10)))}catch(e){}}
-const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}snap()};
+const DK='murgi_dirty';
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(DK,'1')}catch(e){}snap();push()};
 const ago=t=>new Date(t).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});
 function renderBk(){const el=$('bk');if(!el)return;let a=[];try{a=JSON.parse(localStorage.getItem(BK)||'[]')}catch(e){}
  el.innerHTML='<b>🛡️ অটো ব্যাকআপ</b><div class="m" style="margin:6px 0">প্রতি এন্ট্রির পর ফোনে অটো সেভ হয়। শেষ ১০টা কপি:</div>'+a.map((x,i)=>'<div class="row"><span>'+ago(x.t)+'</span><button class="add" style="width:auto;padding:6px 12px;font-size:13px" onclick="restoreBk('+i+')">ফিরিয়ে আনুন</button></div>').join('')}
@@ -328,10 +333,64 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.que
 $('ed').value=$('dd').value=$('bh').value=$('ld').value=$('mcd').value=today;render();togE();
 const cy=(t,seed=0)=>{let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,c;i<t.length;i++){c=t.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return String(4294967296*(2097151&h2)+(h1>>>0))};
 const H1='4894f33c0af711c919ee74f9b9b17e9bb752eae7035d92b977638e07b1bc0c37',H2='2457123609310264',AK='murgi_auth';
-async function okPw(p){p='adnan-agro:'+p;try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')===H1}}catch(e){}return cy(p)===H2}
-function unlock(){document.body.classList.remove('lock')}
+const PWS=[[H1,H2],['eb5ddbeeeb8f646a7470f76441910215d4bd6f012f75c2e85b6db438ffa386ea','5459253941284110']];
+const okTok=t=>PWS.some(x=>x[1]==t);
+async function okPw(p){p='adnan-agro:'+p;try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));const h=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');const m=PWS.find(x=>x[0]===h);return m?m[1]:null}}catch(e){}const c=cy(p),m=PWS.find(x=>x[1]===c);return m?m[1]:null}
+/* ===== অনলাইন সিঙ্ক (Firebase) ===== */
+const FC={apiKey:"AIzaSyAXdemy9C5gWcO8CEwMqnc3RTG9AHtkLfo",authDomain:"adnan-agro.firebaseapp.com",projectId:"adnan-agro",storageBucket:"adnan-agro.firebasestorage.app",messagingSenderId:"821141750981",appId:"1:821141750981:web:64f8477e9d0ac988949cac"};
+let fref=null,synced=false,started=false,first=true,pushT=null,lastJ='';
+const sy=(t,c)=>{const e=$('sy');if(e){e.textContent=t;e.style.color=c||''}};
+function fixS(){if(!S.l)S.l=[];if(!S.md)S.md={};if(!S.mc)S.mc=[];if(!S.e)S.e=[];if(!S.d)S.d=[];if(!S.id)S.id=100;if(!S.b||!S.b.length)S.b=[{id:1,name:'ব্যাচ ১',n:1,hatch:today}];mig()}
+function applyRemote(j){
+ if(j===lastJ)return;
+ snap();
+ try{S=JSON.parse(j)}catch(e){return}
+ lastJ=j;fixS();
+ try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}
+ if(cur!='all'&&!B(cur))cur='all';
+ render();
+}
+function push(now){
+ if(!synced||!fref)return;
+ clearTimeout(pushT);
+ pushT=setTimeout(()=>{
+  const j=JSON.stringify(S);lastJ=j;sy('☁️ সেভ হচ্ছে…');
+  fref.set({j,t:Date.now()}).then(()=>{if(lastJ===j){try{localStorage.removeItem(DK)}catch(e){}}sy('☁️ অনলাইনে সেভ হয়েছে','var(--gn)')}).catch(e=>sy('⚠️ অনলাইনে সেভ হয়নি: '+(e.code||e.message),'var(--rd)'))
+ },now===true?0:400);
+}
+function listen(){
+ fref.onSnapshot(d=>{
+  if(d.metadata.hasPendingWrites)return;
+  if(first){
+   if(!d.exists&&d.metadata.fromCache){sy('⚠️ ইন্টারনেট নেই, অনলাইন ডেটা আনা যায়নি','var(--rd)');return}
+   let dirty=false;try{dirty=!!localStorage.getItem(DK)}catch(e){}
+   if(d.exists){
+    first=false;synced=true;
+    if(dirty)push(true);else{applyRemote(d.data().j);sy('☁️ সিঙ্ক হয়েছে','var(--gn)')}
+   }else if(!fresh){
+    first=false;synced=true;push(true);
+   }else{
+    first=false;
+    ask('অনলাইনে কোনো ডেটা নেই, আর এই ফোনেও পুরনো ডেটা নেই। নতুন করে শুরু করবেন? (যার ফোনে পুরনো ডেটা আছে, সে আগে অ্যাপ খুলুক)').then(ok=>{if(ok){synced=true;push(true)}else sy('⚠️ সিঙ্ক বন্ধ আছে। পুরনো ডেটার ফোনে আগে অ্যাপ খুলুন, তারপর রিলোড করুন','var(--rd)')});
+   }
+   return;
+  }
+  if(d.exists){applyRemote(d.data().j);sy('☁️ সিঙ্ক হয়েছে','var(--gn)')}
+ },e=>sy('⚠️ ডেটাবেস ত্রুটি: '+(e.code||e.message),'var(--rd)'))
+}
+function startSync(){
+ if(started)return;
+ if(typeof firebase==='undefined'){sy('⚠️ অনলাইন সিঙ্ক চালু হয়নি (ইন্টারনেট দেখুন)','var(--rd)');return}
+ started=true;sy('☁️ সংযোগ হচ্ছে…');
+ try{
+  if(!firebase.apps.length)firebase.initializeApp(FC);
+  fref=firebase.firestore().collection('data').doc('main');
+  firebase.auth().signInAnonymously().then(listen).catch(e=>{started=false;sy('⚠️ অনলাইন লগইন ব্যর্থ: '+(e.code||e.message),'var(--rd)')});
+ }catch(e){started=false;sy('⚠️ সিঙ্ক ত্রুটি: '+(e.code||e.message),'var(--rd)')}
+}
+function unlock(){document.body.classList.remove('lock');startSync()}
 function logout(){try{localStorage.removeItem(AK);sessionStorage.removeItem(AK)}catch(e){}$('lgp').value='';$('lge').textContent='';document.body.classList.add('lock')}
-(function(){let ok=false;try{ok=localStorage.getItem(AK)==H2||sessionStorage.getItem(AK)==H2}catch(e){}if(ok)unlock()})();
-$('lgf').onsubmit=async e=>{e.preventDefault();if(await okPw($('lgp').value.trim())){try{($('lgr').checked?localStorage:sessionStorage).setItem(AK,H2)}catch(x){}$('lgp').value='';$('lge').textContent='';unlock()}else{$('lge').textContent='ভুল পাসওয়ার্ড';$('lgp').value=''}};
+(function(){let ok=false;try{ok=okTok(localStorage.getItem(AK))||okTok(sessionStorage.getItem(AK))}catch(e){}if(ok)unlock()})();
+$('lgf').onsubmit=async e=>{e.preventDefault();const tk=await okPw($('lgp').value.trim());if(tk){try{($('lgr').checked?localStorage:sessionStorage).setItem(AK,tk)}catch(x){}$('lgp').value='';$('lge').textContent='';unlock()}else{$('lge').textContent='ভুল পাসওয়ার্ড';$('lgp').value=''}};
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
